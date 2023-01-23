@@ -119,9 +119,8 @@ df$ln_CCD = log(df$CCD)
       for(i in unique(df$Field)){
         test = subset(df, Field != i)
         lofo = subset(df, Field == i)
-        # extract formula and apply to new data
-        mdl = fxn
-        y_pred = exp(predict(mdl, newdata = lofo)) #back-transform from log
+        mdl = lm(formula = fxn$formula, data = test) # extract formula and apply to new data
+        y_pred = exp(predict(mdl, newdata = lofo)) # back-transform from log
         rmspe = sqrt(mean((lofo$ECeg18 - y_pred)^2))
         rmspe_list = append(rmspe_list, rmspe)
         field_list = append(field_list, i)
@@ -136,7 +135,7 @@ df$ln_CCD = log(df$CCD)
 
   # Step 4b: Using repeated K-folds
     set.seed(123)
-    train.control = trainControl(method = "repeatedcv", number = 10, repeats = 100)
+    train.control = trainControl(method = "repeatedcv", number = 10, repeats = 1000)
     # Train the model
     model = train(final_model$formula, data = df, method = "lm",
                   trControl = train.control)
