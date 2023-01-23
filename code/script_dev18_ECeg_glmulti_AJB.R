@@ -111,15 +111,18 @@ df$ln_CCD = log(df$CCD)
   MBEm2 = tdStats(m2df$ECeg18, m2df$ECeg18_pred, functions = c("mbe"))
   MBEm2 # MBE for just Muth2 field
 
-# Step 4: Cross-validate output predictions 
-  #Step 4a: using Leave-one-field-out (LOFO) Root Mean Squared Prediction Error (RMSPE)
+# Step 4: Cross-validate output predictions
+  #Step 4a: using Leave-one-field-out (LOFO)
+  #         Root Mean Squared Prediction Error (RMSPE)
+  #         Scudiero et al., 2016 (http://dx.doi.org/10.1016/j.ecolind.2016.06.015)
     lofo = function(df, fxn){
       rmspe_list = c()
       field_list = c()
       for(i in unique(df$Field)){
-        test = subset(df, Field != i)
-        lofo = subset(df, Field == i)
-        mdl = lm(formula = fxn$formula, data = test) # extract formula and apply to new data
+        train = subset(df, Field != i) # remove field from training data
+        lofo = subset(df, Field == i) # create new data for CV
+        # extract formula and apply to new data
+        mdl = lm(formula = fxn$formula, data = train) 
         y_pred = exp(predict(mdl, newdata = lofo)) # back-transform from log
         rmspe = sqrt(mean((lofo$ECeg18 - y_pred)^2))
         rmspe_list = append(rmspe_list, rmspe)
